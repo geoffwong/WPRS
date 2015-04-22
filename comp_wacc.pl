@@ -104,6 +104,8 @@ my $dbh = db_connect('fai', 'localhost', 3306);
 my $ref;
 my $sth;
 my @allcomps;
+my $start = '2001-01-01';
+my $comPk = 0;
 
 my @wprs_dates = ( '2001-01-01', '2002-12-01', '2003-12-01',
                    '2004-03-01', '2004-06-01', '2004-09-01', '2004-12-01',
@@ -115,13 +117,24 @@ my @wprs_dates = ( '2001-01-01', '2002-12-01', '2003-12-01',
 
 if (scalar @ARGV > 1)
 {
+    if (index($ARGV[1], "-") > -1)
+    {
+        $start = $ARGV[1];
+    }
+    else
+    {
+        $comPk = 0 + $ARGV[1];
+    }
+}
+if ($comPk > 0)
+{
     $sth = $dbh->prepare("select *, unix_timestamp(comDateTo) as comUDate from tblCompetition where comPk=?");
     $sth->execute($ARGV[1]);
 }
 else
 {
-    $sth = $dbh->prepare("select *, unix_timestamp(comDateTo) as comUDate from tblCompetition where comDateTo between '2001-01-01' and '2021-03-01' order by comDateTo");
-    $sth->execute();
+    $sth = $dbh->prepare("select *, unix_timestamp(comDateTo) as comUDate from tblCompetition where comDateTo between ? and '2021-03-01' order by comDateTo");
+    $sth->execute($start);
 }
 
 while ($ref = $sth->fetchrow_hashref())
